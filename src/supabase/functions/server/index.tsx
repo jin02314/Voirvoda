@@ -15,6 +15,7 @@ const supabase = createClient(
 // Create storage bucket on startup
 const WORKS_BUCKET = 'make-93c83ab0-works';
 const EQUIPMENT_BUCKET = 'make-93c83ab0-equipment';
+const ABOUT_BUCKET = 'make-93c83ab0-about';
 
 async function initBuckets() {
   const { data: buckets } = await supabase.storage.listBuckets();
@@ -29,6 +30,12 @@ async function initBuckets() {
   if (!equipmentBucketExists) {
     await supabase.storage.createBucket(EQUIPMENT_BUCKET, { public: false });
     console.log(`Created bucket: ${EQUIPMENT_BUCKET}`);
+  }
+
+  const aboutBucketExists = buckets?.some(bucket => bucket.name === ABOUT_BUCKET);
+  if (!aboutBucketExists) {
+    await supabase.storage.createBucket(ABOUT_BUCKET, { public: false });
+    console.log(`Created bucket: ${ABOUT_BUCKET}`);
   }
 }
 
@@ -406,6 +413,109 @@ app.delete("/make-server-93c83ab0/equipment/:id", async (c) => {
   } catch (error) {
     console.error('Error deleting equipment:', error);
     return c.json({ error: 'Failed to delete equipment' }, 500);
+  }
+});
+
+// ============ CONTACT INFO ENDPOINTS ============
+
+// Get contact info
+app.get("/make-server-93c83ab0/contact", async (c) => {
+  try {
+    const contact = await kv.get('contact:info') || {
+      email: '',
+      phone: '',
+      address: '',
+      website: '',
+      instagram: '',
+      youtube: '',
+      additionalInfo: ''
+    };
+    return c.json({ contact });
+  } catch (error) {
+    console.error('Error fetching contact:', error);
+    return c.json({ error: 'Failed to fetch contact info' }, 500);
+  }
+});
+
+// Update contact info
+app.put("/make-server-93c83ab0/contact", async (c) => {
+  try {
+    const user = await verifyAuth(c.req.header('Authorization'));
+    if (!user) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const contactData = await c.req.json();
+    await kv.set('contact:info', contactData);
+    
+    return c.json({ contact: contactData });
+  } catch (error) {
+    console.error('Error updating contact:', error);
+    return c.json({ error: 'Failed to update contact info' }, 500);
+  }
+});
+
+// ============ ABOUT INFO ENDPOINTS ============
+
+// Get about info
+app.get("/make-server-93c83ab0/about", async (c) => {
+  try {
+    const about = await kv.get('about:info') || {
+      title: '',
+      subtitle: '',
+      bio: '',
+      experience: '',
+      skills: '',
+      achievements: '',
+      profileImage: ''
+    };
+    return c.json({ about });
+  } catch (error) {
+    console.error('Error fetching about:', error);
+    return c.json({ error: 'Failed to fetch about info' }, 500);
+  }
+});
+
+// Update about info
+app.put("/make-server-93c83ab0/about", async (c) => {
+  try {
+    const user = await verifyAuth(c.req.header('Authorization'));
+    if (!user) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const formData = await c.req.formData();
+    const aboutData = JSON.parse(formData.get('data') as string);
+    
+    // Get existing about info
+    const existingAbout = await kv.get('about:info');
+    
+    // Upload new profile image if provided
+    if (formData.has('image')) {
+      const image = formData.get('image') as File;
+      const imagePath = `profile/image-${Date.now()}.${image.name.split('.').pop()}`;
+      
+      const { error } = await supabase.storage
+        .from(ABOUT_BUCKET)
+        .upload(imagePath, image);
+      
+      if (!error) {
+        const { data: signedData } = await supabase.storage
+          .from(ABOUT_BUCKET)
+          .createSignedUrl(imagePath, 31536000);
+        
+        aboutData.profileImage = signedData?.signedUrl;
+      }
+    } else if (existingAbout) {
+      aboutData.profileImage = existingAbout.profileImage;
+    }
+    
+    await kv.set('about:info', aboutData);
+    
+    return c.json({ about: aboutData });
+  } catch (error) {
+    console.error('Error updating about:', error);
+    return c.json({ error: 'Failed to update about info' }, 500);
   }
 });
 

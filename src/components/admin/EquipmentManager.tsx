@@ -285,6 +285,31 @@ export function EquipmentManager({ equipment, setEquipment }: EquipmentManagerPr
             />
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="eq-image">장비 이미지 {isEditing ? '변경 (선택사항)' : '업로드 (선택사항)'}</Label>
+            <Input
+              id="eq-image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+            />
+            {imageFile && (
+              <p className="text-xs text-green-600">
+                선택된 이미지: {imageFile.name}
+              </p>
+            )}
+            {formData.image && !imageFile && (
+              <div className="mt-2">
+                <img 
+                  src={formData.image} 
+                  alt="현재 이미지" 
+                  className="w-32 h-32 object-cover rounded-lg"
+                />
+                <p className="text-xs text-gray-500 mt-1">현재 이미지</p>
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-2">
             {isEditing ? (
               <>

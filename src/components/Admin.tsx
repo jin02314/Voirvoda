@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { WorkArchiveManager } from './admin/WorkArchiveManager';
 import { EquipmentManager } from './admin/EquipmentManager';
+import { ContactManager } from './admin/ContactManager';
+import { AboutManager } from './admin/AboutManager';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Button } from './ui/button';
 import { LogOut, Home } from 'lucide-react';
@@ -34,9 +36,11 @@ export function Admin({ onLogout, workItems, setWorkItems, equipment, setEquipme
         </div>
 
         <Tabs defaultValue="archive" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4">
             <TabsTrigger value="archive">워크 아카이브</TabsTrigger>
             <TabsTrigger value="equipment">장비 관리</TabsTrigger>
+            <TabsTrigger value="about">About</TabsTrigger>
+            <TabsTrigger value="contact">Contact</TabsTrigger>
           </TabsList>
           
           <TabsContent value="archive" className="mt-6">
@@ -51,6 +55,14 @@ export function Admin({ onLogout, workItems, setWorkItems, equipment, setEquipme
               equipment={equipment}
               setEquipment={setEquipment}
             />
+          </TabsContent>
+
+          <TabsContent value="about" className="mt-6">
+            <AboutManager />
+          </TabsContent>
+
+          <TabsContent value="contact" className="mt-6">
+            <ContactManager />
           </TabsContent>
         </Tabs>
       </div>

@@ -243,3 +243,83 @@ export async function deleteEquipment(equipmentId: string) {
 
   return response.json();
 }
+
+// ============ CONTACT INFO API ============
+
+export async function getContactInfo() {
+  const response = await fetch(`${API_BASE}/contact`, {
+    headers: {
+      'Authorization': `Bearer ${publicAnonKey}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch contact info');
+  }
+
+  const data = await response.json();
+  return data.contact;
+}
+
+export async function updateContactInfo(contactData: any) {
+  const token = await getAuthToken();
+  
+  const response = await fetch(`${API_BASE}/contact`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(contactData),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to update contact info');
+  }
+
+  return response.json();
+}
+
+// ============ ABOUT INFO API ============
+
+export async function getAboutInfo() {
+  const response = await fetch(`${API_BASE}/about`, {
+    headers: {
+      'Authorization': `Bearer ${publicAnonKey}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch about info');
+  }
+
+  const data = await response.json();
+  return data.about;
+}
+
+export async function updateAboutInfo(aboutData: any, imageFile: File | null) {
+  const token = await getAuthToken();
+  const formData = new FormData();
+  
+  formData.append('data', JSON.stringify(aboutData));
+  
+  if (imageFile) {
+    formData.append('image', imageFile);
+  }
+
+  const response = await fetch(`${API_BASE}/about`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to update about info');
+  }
+
+  return response.json();
+}
