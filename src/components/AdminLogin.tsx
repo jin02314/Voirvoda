@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
-import { Lock, Eye, EyeOff, UserPlus } from 'lucide-react';
+import { Lock, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
 import * as api from '../lib/api';
 
@@ -12,11 +12,8 @@ interface AdminLoginProps {
 }
 
 export function AdminLogin({ onLogin }: AdminLoginProps) {
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -25,32 +22,12 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
     setIsLoading(true);
 
     try {
-      if (isSignUp) {
-        // 회원가입
-        if (password !== confirmPassword) {
-          toast.error('비밀번호가 일치하지 않습니다.');
-          setIsLoading(false);
-          return;
-        }
-        if (password.length < 6) {
-          toast.error('비밀번호는 최소 6자 이상이어야 합니다.');
-          setIsLoading(false);
-          return;
-        }
-        await api.signUp(email, password, name);
-        toast.success('회원가입 성공! 로그인해주세요.');
-        setIsSignUp(false);
-        setPassword('');
-        setConfirmPassword('');
-      } else {
-        // 로그인
-        await api.signIn(email, password);
-        toast.success('로그인 성공!');
-        onLogin();
-      }
+      await api.signIn(email, password);
+      toast.success('로그인 성공!');
+      onLogin();
     } catch (error: any) {
-      console.error(isSignUp ? '회원가입 오류:' : '로그인 오류:', error);
-      toast.error(error.message || (isSignUp ? '회원가입에 실패했습니다.' : '로그인에 실패했습니다.'));
+      console.error('로그인 오류:', error);
+      toast.error(error.message || '로그인에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -62,39 +39,16 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center">
-              {isSignUp ? (
-                <UserPlus className="w-6 h-6 text-white" />
-              ) : (
-                <Lock className="w-6 h-6 text-white" />
-              )}
+              <Lock className="w-6 h-6 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl">
-            {isSignUp ? '관리자 회원가입' : '관리자 로그인'}
-          </CardTitle>
+          <CardTitle className="text-2xl">관리자 로그인</CardTitle>
           <CardDescription>
-            {isSignUp 
-              ? '새로운 관리자 계정을 생성하세요' 
-              : '관리자 페이지에 접근하려면 이메일과 비밀번호를 입력하세요'
-            }
+            관리자 페이지에 접근하려면 이메일과 비밀번호를 입력하세요
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="name">이름</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="홍길동"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
-            )}
-
             <div className="space-y-2">
               <Label htmlFor="email">이메일</Label>
               <Input
@@ -113,7 +67,7 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder={isSignUp ? '최소 6자 이상' : '비밀번호를 입력하세요'}
+                  placeholder="비밀번호를 입력하세요"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -132,45 +86,17 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
                 </button>
               </div>
             </div>
-
-            {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">비밀번호 확인</Label>
-                <Input
-                  id="confirmPassword"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="비밀번호 재입력"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
-            )}
             
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isLoading || !email || !password || (isSignUp && (!name || !confirmPassword))}
+              disabled={isLoading || !email || !password}
             >
-              {isLoading 
-                ? (isSignUp ? '가입 중...' : '로그인 중...') 
-                : (isSignUp ? '회원가입' : '로그인')
-              }
+              {isLoading ? '로그인 중...' : '로그인'}
             </Button>
 
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSignUp(!isSignUp);
-                  setPassword('');
-                  setConfirmPassword('');
-                  setName('');
-                }}
-                className="text-sm text-gray-600 hover:text-black underline"
-              >
-                {isSignUp ? '이미 계정이 있으신가요? 로그인' : '계정이 없으신가요? 회원가입'}
-              </button>
+            <div className="text-center text-sm text-gray-500 mt-4 pt-4 border-t">
+              계정이 필요하신가요? 시스템 관리자에게 문의하세요.
             </div>
           </form>
         </CardContent>
