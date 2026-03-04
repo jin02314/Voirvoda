@@ -83,6 +83,6 @@ export const getByPrefix = async (prefix: string): Promise<any[]> => {
   if (error) {
     throw new Error(error.message);
   }
-  // ID를 value에 포함하여 반환
-  return data?.map((d) => ({ ...d.value, id: d.key })) ?? [];
+  // ID를 key로 설정 (덮어쓰기 보장)
+  return data?.map((d) => ({ id: d.key, ...d.value })) ?? [];
 };

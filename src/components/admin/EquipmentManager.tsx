@@ -124,15 +124,23 @@ export function EquipmentManager({ equipment, setEquipment }: EquipmentManagerPr
       return;
     }
     
+    console.log('🗑️ 장비 삭제 요청 ID:', id);
+    
     try {
       await api.deleteEquipment(id);
       
+      console.log('✅ 서버 삭제 완료, 로컬 state 업데이트 중...');
+      
       // 로컬에서 즉시 제거
-      setEquipment(prev => prev.filter(item => item.id !== id));
+      setEquipment(prev => {
+        const filtered = prev.filter(item => item.id !== id);
+        console.log('📊 삭제 전:', prev.length, '삭제 후:', filtered.length);
+        return filtered;
+      });
       
       toast.success('장비가 삭제되었습니다');
     } catch (error: any) {
-      console.error('장비 삭제 오류:', error);
+      console.error('❌ 장비 삭제 오류:', error);
       toast.error('삭제 실패: ' + error.message);
     }
   };

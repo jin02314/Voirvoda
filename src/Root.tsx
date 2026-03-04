@@ -14,25 +14,35 @@ export default function Root() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load data from API on mount
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [works, equipmentData] = await Promise.all([
-          api.getWorks(),
-          api.getEquipment(),
-        ]);
-        setWorkItems(works);
-        setEquipment(equipmentData);
-      } catch (error) {
-        console.error('Data loading error:', error);
-        // 에러가 나도 빈 배열로 계속 진행
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Load data from API
+  const loadData = async () => {
+    try {
+      const [works, equipmentData] = await Promise.all([
+        api.getWorks(),
+        api.getEquipment(),
+      ]);
+      console.log('📥 [Root] 데이터 로드 완료:', works.length, '작품,', equipmentData.length, '장비');
+      setWorkItems(works);
+      setEquipment(equipmentData);
+    } catch (error) {
+      console.error('❌ [Root] 데이터 로딩 오류:', error);
+      // 에러가 나도 빈 배열로 계속 진행
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // Initial load on mount
+  useEffect(() => {
     loadData();
+    
+    // Poll for updates every 5 seconds
+    const interval = setInterval(() => {
+      console.log('🔄 [Root] 데이터 자동 새로고침...');
+      loadData();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   if (isLoading) {

@@ -144,7 +144,13 @@ export function WorkArchiveManager({ workItems, setWorkItems }: WorkArchiveManag
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('정말 이 작품을 삭제하시겠습니까?')) {
+    if (!id || id === 'undefined') {
+      console.error('❌ 잘못된 ID:', id);
+      toast.error('잘못된 작품 ID입니다.');
+      return;
+    }
+    
+    if (!window.confirm(`정말 이 작품을 삭제하시겠습니까?`)) {
       return;
     }
     
@@ -156,7 +162,7 @@ export function WorkArchiveManager({ workItems, setWorkItems }: WorkArchiveManag
       
       toast.success('작품이 삭제되었습니다');
     } catch (error: any) {
-      console.error('작품 삭제 오류:', error);
+      console.error('❌ 작품 삭제 오류:', error);
       toast.error('삭제 실패: ' + error.message);
     }
   };

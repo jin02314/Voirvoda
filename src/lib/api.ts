@@ -142,19 +142,31 @@ export async function updateWork(workId: string, workData: any, thumbnailFile: F
 export async function deleteWork(workId: string) {
   const token = await getAuthToken();
   
-  const response = await fetch(`${API_BASE}/works/${workId}`, {
+  console.log('🌐 [클라이언트] 삭제 API 호출:', workId);
+  
+  // URL 인코딩 추가 (콜론이 있으면 인코딩)
+  const encodedWorkId = encodeURIComponent(workId);
+  console.log('🌐 [클라이언트] 인코딩된 ID:', encodedWorkId);
+  console.log('🌐 [클라이언트] URL:', `${API_BASE}/works/${encodedWorkId}`);
+  
+  const response = await fetch(`${API_BASE}/works/${encodedWorkId}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,
     },
   });
   
+  console.log('🌐 [클라이언트] 응답 상태:', response.status, response.statusText);
+  
   if (!response.ok) {
     const error = await response.json();
+    console.error('🌐 [클라이언트] 에러 응답:', error);
     throw new Error(error.error || 'Failed to delete work');
   }
 
-  return response.json();
+  const result = await response.json();
+  console.log('🌐 [클라이언트] 성공 응답:', result);
+  return result;
 }
 
 // ============ EQUIPMENT API ============
@@ -399,11 +411,29 @@ export async function clearAllWorks() {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to clear works');
+    const errorText = await response.text();
+    let errorMessage = 'Failed to clear works';
+    try {
+      const errorJson = JSON.parse(errorText);
+      errorMessage = errorJson.error || errorMessage;
+    } catch {
+      errorMessage = errorText || errorMessage;
+    }
+    throw new Error(errorMessage);
   }
 
-  return response.json();
+  // Handle empty response
+  const text = await response.text();
+  if (!text || text.trim() === '') {
+    return { success: true, deleted: 0 };
+  }
+  
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('JSON parse error:', error, 'Response:', text);
+    return { success: true, deleted: 0 };
+  }
 }
 
 export async function clearAllEquipment() {
@@ -417,9 +447,27 @@ export async function clearAllEquipment() {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to clear equipment');
+    const errorText = await response.text();
+    let errorMessage = 'Failed to clear equipment';
+    try {
+      const errorJson = JSON.parse(errorText);
+      errorMessage = errorJson.error || errorMessage;
+    } catch {
+      errorMessage = errorText || errorMessage;
+    }
+    throw new Error(errorMessage);
   }
 
-  return response.json();
+  // Handle empty response
+  const text = await response.text();
+  if (!text || text.trim() === '') {
+    return { success: true, deleted: 0 };
+  }
+  
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('JSON parse error:', error, 'Response:', text);
+    return { success: true, deleted: 0 };
+  }
 }

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { AdminLogin } from './components/AdminLogin';
+import { Sidebar } from './components/Sidebar';
 import { Admin } from './components/Admin';
+import { AdminLogin } from './components/AdminLogin';
 import { Toaster } from './components/ui/sonner';
 import { WorkItem, Equipment } from './lib/sharedState';
+import { toast } from 'sonner@2.0.3';
 import * as api from './lib/api';
-import { toast } from 'sonner';
 
 export default function AdminPage() {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);

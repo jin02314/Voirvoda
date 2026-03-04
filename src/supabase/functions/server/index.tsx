@@ -266,25 +266,33 @@ app.delete("/make-server-93c83ab0/works/:id", async (c) => {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
-    const workId = c.req.param('id');
+    // URL에서 받은 ID는 자동으로 디코딩됨
+    const workId = decodeURIComponent(c.req.param('id'));
+    
+    console.log('🗑️ [서버] 삭제 요청 받음:', workId);
+    console.log('🗑️ [서버] 원본 param:', c.req.param('id'));
     
     // Delete files from storage
     const { data: files } = await supabase.storage
       .from(WORKS_BUCKET)
       .list(workId);
     
+    console.log('📁 [서버] 스토리지 파일:', files?.length || 0, '개');
+    
     if (files && files.length > 0) {
       const filePaths = files.map(file => `${workId}/${file.name}`);
       await supabase.storage
         .from(WORKS_BUCKET)
         .remove(filePaths);
+      console.log('🗑️ [서버] 스토리지 파일 삭제 완료');
     }
     
-    await kv.del(workId);
+    const deleteResult = await kv.del(workId);
+    console.log('✅ [서버] KV 삭제 결과:', deleteResult);
     
     return c.json({ success: true });
   } catch (error) {
-    console.error('Error deleting work:', error);
+    console.error('❌ [서버] Error deleting work:', error);
     return c.json({ error: 'Failed to delete work' }, 500);
   }
 });
