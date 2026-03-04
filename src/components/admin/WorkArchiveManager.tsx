@@ -96,13 +96,10 @@ export function WorkArchiveManager({ workItems, setWorkItems }: WorkArchiveManag
     setIsUploading(true);
 
     try {
-      const response = await api.addWork(uploadForm, thumbnailFile, imageFiles);
-      const newWork: WorkItem = {
-        ...uploadForm,
-        ...response.work,
-        id: response.id
-      };
-      setWorkItems([newWork, ...workItems]);
+      await api.addWork(uploadForm, thumbnailFile, imageFiles);
+      // 서버에서 최신 데이터 다시 로드
+      const updatedWorks = await api.getWorks();
+      setWorkItems(updatedWorks);
       toast.success('작품이 추가되었습니다');
       resetForm();
     } catch (error: any) {
@@ -152,12 +149,28 @@ export function WorkArchiveManager({ workItems, setWorkItems }: WorkArchiveManag
     }
     
     try {
+      const beforeCount = workItems.length;
+      toast.info(`삭제 시작 - 현재 ${beforeCount}개`);
+      
       await api.deleteWork(id);
-      setWorkItems(workItems.filter(item => item.id !== id));
-      toast.success('작품이 삭제되었습니다');
+      toast.info('API 삭제 완료 - 서버에서 데이터 가져오는 중...');
+      
+      // 서버에서 최신 데이터 다시 로드
+      const updatedWorks = await api.getWorks();
+      const afterCount = updatedWorks.length;
+      
+      toast.info(`서버 응답: ${afterCount}개 (이전: ${beforeCount}개)`);
+      
+      setWorkItems(updatedWorks);
+      
+      if (afterCount < beforeCount) {
+        toast.success(`작품이 삭제되었습니다! ${beforeCount}개 → ${afterCount}개`);
+      } else {
+        toast.error(`⚠️ 삭제 실패! 여전히 ${afterCount}개`);
+      }
     } catch (error: any) {
-      console.error('작품 삭제 오류:', error);
-      toast.error(error.message || '작품 삭제에 실패했습니다');
+      console.error('❌ 작품 삭제 오류:', error);
+      toast.error(`삭제 오류: ${error.message}`);
     }
   };
 
@@ -267,7 +280,7 @@ export function WorkArchiveManager({ workItems, setWorkItems }: WorkArchiveManag
           )}
 
           {!isEditing && (
-            <>
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="thumbnail">
                   썸네일 이미지 * (1:1 비율 권장)
@@ -387,7 +400,7 @@ export function WorkArchiveManager({ workItems, setWorkItems }: WorkArchiveManag
                   )}
                 </div>
               )}
-            </>
+            </div>
           )}
 
           {isEditing && (

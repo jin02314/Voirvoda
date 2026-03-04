@@ -2,14 +2,15 @@ import { useState, useEffect } from 'react';
 import { AdminLogin } from './components/AdminLogin';
 import { Admin } from './components/Admin';
 import { Toaster } from './components/ui/sonner';
-import { useSharedState } from './lib/sharedState';
+import { WorkItem, Equipment } from './lib/sharedState';
 import * as api from './lib/api';
 import { toast } from 'sonner';
 
 export default function AdminPage() {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { workItems, setWorkItems, equipment, setEquipment } = useSharedState();
+  const [workItems, setWorkItems] = useState<WorkItem[]>([]);
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
 
   // Check if user is already logged in
   useEffect(() => {

@@ -148,7 +148,7 @@ export async function deleteWork(workId: string) {
       'Authorization': `Bearer ${token}`,
     },
   });
-
+  
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || 'Failed to delete work');
@@ -247,18 +247,49 @@ export async function deleteEquipment(equipmentId: string) {
 // ============ CONTACT INFO API ============
 
 export async function getContactInfo() {
-  const response = await fetch(`${API_BASE}/contact`, {
-    headers: {
-      'Authorization': `Bearer ${publicAnonKey}`,
-    },
-  });
+  try {
+    const response = await fetch(`${API_BASE}/contact`, {
+      headers: {
+        'Authorization': `Bearer ${publicAnonKey}`,
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch contact info');
+    if (!response.ok) {
+      // 404나 다른 에러일 경우 빈 객체 반환
+      return {
+        email: '',
+        phone: '',
+        address: '',
+        website: '',
+        instagram: '',
+        youtube: '',
+        additionalInfo: ''
+      };
+    }
+
+    const data = await response.json();
+    return data.contact || {
+      email: '',
+      phone: '',
+      address: '',
+      website: '',
+      instagram: '',
+      youtube: '',
+      additionalInfo: ''
+    };
+  } catch (error) {
+    console.error('Contact API error:', error);
+    // 네트워크 에러 등의 경우에도 빈 객체 반환
+    return {
+      email: '',
+      phone: '',
+      address: '',
+      website: '',
+      instagram: '',
+      youtube: '',
+      additionalInfo: ''
+    };
   }
-
-  const data = await response.json();
-  return data.contact;
 }
 
 export async function updateContactInfo(contactData: any) {
@@ -284,18 +315,49 @@ export async function updateContactInfo(contactData: any) {
 // ============ ABOUT INFO API ============
 
 export async function getAboutInfo() {
-  const response = await fetch(`${API_BASE}/about`, {
-    headers: {
-      'Authorization': `Bearer ${publicAnonKey}`,
-    },
-  });
+  try {
+    const response = await fetch(`${API_BASE}/about`, {
+      headers: {
+        'Authorization': `Bearer ${publicAnonKey}`,
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch about info');
+    if (!response.ok) {
+      // 404나 다른 에러일 경우 빈 객체 반환
+      return {
+        title: '',
+        subtitle: '',
+        bio: '',
+        experience: '',
+        skills: '',
+        achievements: '',
+        profileImage: ''
+      };
+    }
+
+    const data = await response.json();
+    return data.about || {
+      title: '',
+      subtitle: '',
+      bio: '',
+      experience: '',
+      skills: '',
+      achievements: '',
+      profileImage: ''
+    };
+  } catch (error) {
+    console.error('About API error:', error);
+    // 네트워크 에러 등의 경우에도 빈 객체 반환
+    return {
+      title: '',
+      subtitle: '',
+      bio: '',
+      experience: '',
+      skills: '',
+      achievements: '',
+      profileImage: ''
+    };
   }
-
-  const data = await response.json();
-  return data.about;
 }
 
 export async function updateAboutInfo(aboutData: any, imageFile: File | null) {

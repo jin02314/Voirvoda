@@ -35,7 +35,8 @@ export function AboutManager() {
       }
     } catch (error: any) {
       console.error('About 정보 로드 오류:', error);
-      toast.error('About 정보를 불러올 수 없습니다.');
+      // 에러가 발생해도 계속 진행 (데이터가 없을 수 있음)
+      // toast.error('About 정보를 불러올 수 없습니다.');
     } finally {
       setIsLoading(false);
     }

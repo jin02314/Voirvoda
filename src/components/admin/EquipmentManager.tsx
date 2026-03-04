@@ -60,13 +60,10 @@ export function EquipmentManager({ equipment, setEquipment }: EquipmentManagerPr
     };
 
     try {
-      const response = await api.addEquipment(equipmentData, imageFile);
-      const newEquipment: Equipment = {
-        ...equipmentData,
-        ...response.equipment,
-        id: response.id
-      };
-      setEquipment([newEquipment, ...equipment]);
+      await api.addEquipment(equipmentData, imageFile);
+      // 서버에서 최신 데이터 다시 로드
+      const updatedEquipment = await api.getEquipment();
+      setEquipment(updatedEquipment);
       toast.success('장비가 추가되었습니다');
       resetForm();
     } catch (error: any) {
@@ -129,7 +126,9 @@ export function EquipmentManager({ equipment, setEquipment }: EquipmentManagerPr
     
     try {
       await api.deleteEquipment(id);
-      setEquipment(equipment.filter(item => item.id !== id));
+      // 서버에서 최신 데이터 다시 로드
+      const updatedEquipment = await api.getEquipment();
+      setEquipment(updatedEquipment);
       toast.success('장비가 삭제되었습니다');
     } catch (error: any) {
       console.error('장비 삭제 오류:', error);
