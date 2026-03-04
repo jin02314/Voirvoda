@@ -125,28 +125,15 @@ export function EquipmentManager({ equipment, setEquipment }: EquipmentManagerPr
     }
     
     try {
-      const beforeCount = equipment.length;
-      toast.info(`삭제 시작 - 현재 ${beforeCount}개`);
-      
       await api.deleteEquipment(id);
-      toast.info('API 삭제 완료 - 서버에서 데이터 가져오는 중...');
       
-      // 서버에서 최신 데이터 다시 로드
-      const updatedEquipment = await api.getEquipment();
-      const afterCount = updatedEquipment.length;
+      // 로컬에서 즉시 제거
+      setEquipment(prev => prev.filter(item => item.id !== id));
       
-      toast.info(`서버 응답: ${afterCount}개 (이전: ${beforeCount}개)`);
-      
-      setEquipment(updatedEquipment);
-      
-      if (afterCount < beforeCount) {
-        toast.success(`장비가 삭제되었습니다! ${beforeCount}개 → ${afterCount}개`);
-      } else {
-        toast.error(`⚠️ 삭제 실패! 여전히 ${afterCount}개`);
-      }
+      toast.success('장비가 삭제되었습니다');
     } catch (error: any) {
       console.error('장비 삭제 오류:', error);
-      toast.error(`삭제 오류: ${error.message}`);
+      toast.error('삭제 실패: ' + error.message);
     }
   };
 
@@ -348,7 +335,7 @@ export function EquipmentManager({ equipment, setEquipment }: EquipmentManagerPr
         <CardHeader>
           <CardTitle>장비 목록</CardTitle>
           <CardDescription>
-            총 {equipment.length}개의 장비 • 드래그하여 순서 변경
+            총 {equipment.length}개의 장비 • 드래그하 순서 변경
           </CardDescription>
         </CardHeader>
         <CardContent>

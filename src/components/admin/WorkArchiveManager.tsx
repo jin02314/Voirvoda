@@ -149,28 +149,15 @@ export function WorkArchiveManager({ workItems, setWorkItems }: WorkArchiveManag
     }
     
     try {
-      const beforeCount = workItems.length;
-      toast.info(`삭제 시작 - 현재 ${beforeCount}개`);
-      
       await api.deleteWork(id);
-      toast.info('API 삭제 완료 - 서버에서 데이터 가져오는 중...');
       
-      // 서버에서 최신 데이터 다시 로드
-      const updatedWorks = await api.getWorks();
-      const afterCount = updatedWorks.length;
+      // 로컬에서 즉시 제거
+      setWorkItems(prev => prev.filter(item => item.id !== id));
       
-      toast.info(`서버 응답: ${afterCount}개 (이전: ${beforeCount}개)`);
-      
-      setWorkItems(updatedWorks);
-      
-      if (afterCount < beforeCount) {
-        toast.success(`작품이 삭제되었습니다! ${beforeCount}개 → ${afterCount}개`);
-      } else {
-        toast.error(`⚠️ 삭제 실패! 여전히 ${afterCount}개`);
-      }
+      toast.success('작품이 삭제되었습니다');
     } catch (error: any) {
-      console.error('❌ 작품 삭제 오류:', error);
-      toast.error(`삭제 오류: ${error.message}`);
+      console.error('작품 삭제 오류:', error);
+      toast.error('삭제 실패: ' + error.message);
     }
   };
 

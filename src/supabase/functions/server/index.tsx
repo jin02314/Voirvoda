@@ -519,4 +519,76 @@ app.put("/make-server-93c83ab0/about", async (c) => {
   }
 });
 
+// ============ ADMIN UTILITY ENDPOINTS ============
+
+// Delete all works (admin only)
+app.delete("/make-server-93c83ab0/admin/clear-works", async (c) => {
+  try {
+    const user = await verifyAuth(c.req.header('Authorization'));
+    if (!user) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    // Get all works
+    const works = await kv.getByPrefix('work:');
+    
+    // Delete each work and its files
+    for (const work of works) {
+      // Delete files from storage
+      const { data: files } = await supabase.storage
+        .from(WORKS_BUCKET)
+        .list(work.id);
+      
+      if (files && files.length > 0) {
+        const filePaths = files.map(file => `${work.id}/${file.name}`);
+        await supabase.storage
+          .from(WORKS_BUCKET)
+          .remove(filePaths);
+      }
+      
+      await kv.del(work.id);
+    }
+    
+    return c.json({ success: true, deleted: works.length });
+  } catch (error) {
+    console.error('Error clearing works:', error);
+    return c.json({ error: 'Failed to clear works' }, 500);
+  }
+});
+
+// Delete all equipment (admin only)
+app.delete("/make-server-93c83ab0/admin/clear-equipment", async (c) => {
+  try {
+    const user = await verifyAuth(c.req.header('Authorization'));
+    if (!user) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    // Get all equipment
+    const equipment = await kv.getByPrefix('equipment:');
+    
+    // Delete each equipment and its files
+    for (const item of equipment) {
+      // Delete files from storage
+      const { data: files } = await supabase.storage
+        .from(EQUIPMENT_BUCKET)
+        .list(item.id);
+      
+      if (files && files.length > 0) {
+        const filePaths = files.map(file => `${item.id}/${file.name}`);
+        await supabase.storage
+          .from(EQUIPMENT_BUCKET)
+          .remove(filePaths);
+      }
+      
+      await kv.del(item.id);
+    }
+    
+    return c.json({ success: true, deleted: equipment.length });
+  } catch (error) {
+    console.error('Error clearing equipment:', error);
+    return c.json({ error: 'Failed to clear equipment' }, 500);
+  }
+});
+
 Deno.serve(app.fetch);

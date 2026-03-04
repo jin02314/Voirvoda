@@ -385,3 +385,41 @@ export async function updateAboutInfo(aboutData: any, imageFile: File | null) {
 
   return response.json();
 }
+
+// ============ ADMIN UTILITY API ============
+
+export async function clearAllWorks() {
+  const token = await getAuthToken();
+  
+  const response = await fetch(`${API_BASE}/admin/clear-works`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to clear works');
+  }
+
+  return response.json();
+}
+
+export async function clearAllEquipment() {
+  const token = await getAuthToken();
+  
+  const response = await fetch(`${API_BASE}/admin/clear-equipment`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to clear equipment');
+  }
+
+  return response.json();
+}
